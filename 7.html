@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treasure Hunt: Question 7</title>
+    <title>Jigsaw Puzzle</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -30,6 +30,7 @@
             height: 60px;
             background-size: 300px 180px;
             cursor: grab;
+            position: relative;
         }
 
         .drop-slot {
@@ -37,6 +38,7 @@
             height: 60px;
             background: #f0f0f0;
             border: 1px solid #ddd;
+            position: relative;
         }
 
         .correct {
@@ -45,6 +47,7 @@
     </style>
 </head>
 <body>
+    <h1>Jigsaw Puzzle</h1>
     <div id="puzzle-container"></div>
     <div id="drop-container"></div>
 
@@ -57,6 +60,8 @@
         const dropContainer = document.getElementById('drop-container');
 
         let pieces = [];
+        let draggedPiece = null;
+        let touchOffset = { x: 0, y: 0 };
 
         // Create and shuffle pieces
         function createPuzzlePieces() {
@@ -72,6 +77,11 @@
                     // Add drag event listeners
                     piece.addEventListener('dragstart', dragStart);
                     piece.addEventListener('dragend', dragEnd);
+
+                    // Add touch event listeners
+                    piece.addEventListener('touchstart', touchStart);
+                    piece.addEventListener('touchmove', touchMove);
+                    piece.addEventListener('touchend', touchEnd);
 
                     pieces.push(piece);
                 }
@@ -100,8 +110,6 @@
         }
 
         // Drag and drop handlers
-        let draggedPiece = null;
-
         function dragStart(event) {
             draggedPiece = event.target;
             setTimeout(() => event.target.style.display = 'none', 0);
@@ -130,6 +138,47 @@
                     slot.classList.remove('correct');
                 }
             }
+        }
+
+        // Touch handlers
+        function touchStart(event) {
+            const touch = event.touches[0];
+            draggedPiece = event.target;
+            touchOffset.x = touch.clientX - draggedPiece.getBoundingClientRect().left;
+            touchOffset.y = touch.clientY - draggedPiece.getBoundingClientRect().top;
+
+            draggedPiece.style.position = 'absolute';
+        }
+
+        function touchMove(event) {
+            event.preventDefault();
+            const touch = event.touches[0];
+
+            draggedPiece.style.left = `${touch.clientX - touchOffset.x}px`;
+            draggedPiece.style.top = `${touch.clientY - touchOffset.y}px`;
+        }
+
+        function touchEnd(event) {
+            const touch = event.changedTouches[0];
+            const dropTargets = document.elementsFromPoint(touch.clientX, touch.clientY);
+            const validDropTarget = dropTargets.find(target => target.classList.contains('drop-slot'));
+
+            if (validDropTarget && !validDropTarget.firstChild) {
+                validDropTarget.appendChild(draggedPiece);
+
+                // Check if the piece is in the correct position
+                if (draggedPiece.dataset.position === validDropTarget.dataset.position) {
+                    validDropTarget.classList.add('correct');
+                } else {
+                    validDropTarget.classList.remove('correct');
+                }
+            } else {
+                draggedPiece.style.position = '';
+                draggedPiece.style.left = '';
+                draggedPiece.style.top = '';
+            }
+
+            draggedPiece = null;
         }
 
         // Initialize puzzle
