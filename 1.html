@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Treasure Hunt: Question 1</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #fff;
+    }
+
+    .scratch-card {
+      position: relative;
+      width: 250px;
+      height: 250px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      background-color: gray;
+      cursor: pointer;
+	  border: 1px solid black;
+    }
+
+    .message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      color: black;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0; /* Start with the message hidden */
+      transition: opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scratch-card">
+    <canvas id="scratchCanvas"></canvas>
+    <div class="message">Tongue's X</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('scratchCanvas');
+    const ctx = canvas.getContext('2d');
+    const message = document.querySelector('.message');
+
+    // Set canvas size
+    canvas.width = 250;
+    canvas.height = 250;
+
+    // Draw the gray overlay over the entire canvas
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the hidden message
+    const messageText = '';
+    ctx.fillStyle = 'white'; // Same color as the scratch-off area
+    ctx.font = '24px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(messageText, canvas.width / 2, canvas.height / 2);
+
+    // Track if the user is scratching
+    let isScratching = false;
+
+    // Start scratching when the mouse is pressed
+    function startScratching(event) {
+      isScratching = true;
+      scratch(event);
+    }
+
+    // Stop scratching when the mouse is released
+    function stopScratching() {
+      isScratching = false;
+    }
+
+    // Scratch as the mouse moves
+    function scratchMove(event) {
+      if (!isScratching) return;
+      scratch(event);
+    }
+
+    // Scratching effect
+    function scratch(event) {
+      const x = event.clientX - canvas.getBoundingClientRect().left;
+      const y = event.clientY - canvas.getBoundingClientRect().top;
+
+      // Erase the gray area to reveal the message underneath
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, Math.PI * 2, false);
+      ctx.fill();
+
+      // Check the progress of scratching and update message visibility
+      checkScratchProgress();
+    }
+
+    // Check how much of the canvas is scratched and adjust the message visibility
+    function checkScratchProgress() {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imageData.data;
+      let scratchedPixels = 0;
+
+      // Count the transparent (scratched) pixels
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i + 3] < 128) { // Check alpha value for transparency
+          scratchedPixels++;
+        }
+      }
+
+      const totalPixels = pixels.length / 4;
+      const scratchedPercentage = (scratchedPixels / totalPixels) * 100;
+
+      // Gradually reveal the message based on the scratched area
+      if (scratchedPercentage >= 90) {
+		message.style.opacity = (scratchedPercentage  / 100);
+	  }
+    }
+
+    // Event listeners for mouse and touch
+    canvas.addEventListener('mousedown', startScratching);
+    canvas.addEventListener('mouseup', stopScratching);
+    canvas.addEventListener('mousemove', scratchMove);
+    canvas.addEventListener('touchstart', startScratching);
+    canvas.addEventListener('touchend', stopScratching);
+    canvas.addEventListener('touchmove', scratchMove);
+  </script>
+
+</body>
+</html>

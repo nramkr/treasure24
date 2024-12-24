@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt</title>
+    <style>
+        body {
+			font-family: Arial, sans-serif;
+			text-align: center;
+			background-color: #f0f8ff;
+			margin: 0;
+			padding: 0;
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			overflow: hidden;
+		}
+
+		#quiz-container {
+			height: 100%;
+			width: 100%;
+			max-width: 600px;
+			overflow-y: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			scroll-behavior: smooth;
+			position: relative;
+		}
+
+		.question-container {
+			width: 100%;
+			text-align: center;
+			margin: 10px 0;
+		}
+
+		.question {
+			font-size: 1.2em;
+			margin-bottom: 10px;
+		}
+
+		.answer-box {
+			padding: 10px;
+			font-size: 1.2em;
+			width: 80%;
+			max-width: 300px;
+			margin: auto;
+			border: 2px solid #ccc;
+			border-radius: 8px;
+		}
+
+		.submit-button {
+			padding: 10px;
+			font-size: 1.2em;
+			width: 80%;
+			max-width: 300px;
+			margin-top: 10px;
+			margin-left: auto;
+			margin-right: auto;
+			background-color: #007BFF;
+			color: white;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+		}
+
+		.submit-button:disabled {
+			background-color: #cccccc;
+		}
+
+		#fireworks {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: none;
+			background-color: rgba(0, 0, 0, 0.8);
+			z-index: 1000;
+			justify-content: center;
+			align-items: center;
+			color: white;
+			font-size: 2.5em;
+		}
+
+		canvas {
+			position: absolute;
+		}
+
+
+    </style>
+</head>
+<body>
+    <div id="quiz-container">
+    </div>
+
+    <div id="fireworks">
+        <canvas id="fireworksCanvas"></canvas>
+        <div>Congrats! Collect your treasure. Merry Christmas.</div>
+    </div>
+
+    <script>
+        const questions = [
+		{ text: '<a href="1.html" target="_blank">Click here to open the first challenge (opens in new window)</a>', answer: "tungsten" },
+		{ text: '<a href="2.html" target="_blank">Click here to open the second challenge (opens in new window)</a>', answer: "15" },
+		{ text: '<a href="3.html" target="_blank">Click here to open the third challenge (opens in new window)</a>', answer: "e" },
+		{ text: '<a href="4.html" target="_blank">Click here to open the fourth challenge (opens in new window)</a>', answer: "thousand" },
+		{ text: '<a href="5.html" target="_blank">Click here to open the fifth challenge (opens in new window)</a>', answer: "housefly" },
+		{ text: '<a href="6.html" target="_blank">Click here to open the sixth challenge (opens in new window)</a>', answer: "sulfur" },
+		{ text: '<a href="7.html" target="_blank">Click here to open the sevents challenge (opens in new window)</a>', answer: "a" },
+		{ text: "Now, using the answers above as clues, find the final answer", answer: "awesome" },
+	];
+
+	let currentQuestion = 0;
+
+	const quizContainer = document.getElementById('quiz-container');
+	const fireworksElem = document.getElementById('fireworks');
+	const fireworksCanvas = document.getElementById('fireworksCanvas');
+
+	function displayQuestion(index) {
+		const questionContainer = document.createElement('div');
+		questionContainer.classList.add('question-container');
+
+		const questionElem = document.createElement('div');
+		questionElem.classList.add('question');
+		//questionElem.textContent = questions[index].text;
+		questionElem.innerHTML = questions[index].text;
+
+		const answerElem = document.createElement('input');
+		answerElem.type = 'text';
+		answerElem.classList.add('answer-box');
+		answerElem.placeholder = 'Type your answer here...';
+		answerElem.disabled = index < currentQuestion;
+
+		const submitButton = document.createElement('button');
+		submitButton.textContent = 'Submit';
+		submitButton.classList.add('submit-button');
+		submitButton.style.display = index === currentQuestion ? 'block' : 'none';
+
+		submitButton.addEventListener('click', () => {
+			const userAnswer = answerElem.value.trim();
+			if (userAnswer.toLowerCase() === questions[index].answer.toLowerCase()) {
+				answerElem.disabled = true;
+				submitButton.style.display = 'none';
+				currentQuestion++;
+				if (currentQuestion < questions.length) {
+					displayQuestion(currentQuestion); // Display the next question
+					quizContainer.scrollTop = quizContainer.scrollHeight; // Scroll to the bottom to show new question
+				} else {
+					showFireworks();
+				}
+			} else {
+				alert("Incorrect answer. Try again!");
+			}
+		});
+
+		questionContainer.appendChild(questionElem);
+		questionContainer.appendChild(answerElem);
+		questionContainer.appendChild(submitButton);
+
+		quizContainer.appendChild(questionContainer);
+
+		// Focus the input field automatically when the question is displayed
+		answerElem.focus();
+	}
+
+	function initQuiz() {
+		displayQuestion(currentQuestion); // Start the quiz by displaying the first question
+		quizContainer.scrollTop = quizContainer.scrollHeight; // Scroll down to show the first question at the top
+	}
+
+	// Fireworks effect
+	function showFireworks() {
+		fireworksElem.style.display = 'flex';
+		const canvas = fireworksCanvas;
+		const ctx = canvas.getContext('2d');
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+
+		const particles = [];
+		const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFFFFF'];
+
+		function createParticle(x, y) {
+			const particle = {
+				x: x,
+				y: y,
+				radius: Math.random() * 4 + 1,
+				color: colors[Math.floor(Math.random() * colors.length)],
+				speedX: (Math.random() - 0.5) * 5,
+				speedY: (Math.random() - 0.5) * 5,
+				life: Math.random() * 50 + 50,
+			};
+			particles.push(particle);
+		}
+
+		function updateParticles() {
+			for (let i = particles.length - 1; i >= 0; i--) {
+				const p = particles[i];
+				p.x += p.speedX;
+				p.y += p.speedY;
+				p.life--;
+
+				if (p.life <= 0) {
+					particles.splice(i, 1);
+				}
+			}
+		}
+
+		function drawParticles() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			particles.forEach(p => {
+				ctx.beginPath();
+				ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+				ctx.fillStyle = p.color;
+				ctx.fill();
+			});
+		}
+
+		function animate() {
+			createParticle(Math.random() * canvas.width, Math.random() * canvas.height);
+			updateParticles();
+			drawParticles();
+			requestAnimationFrame(animate);
+		}
+
+		animate();
+	}
+
+	initQuiz(); // Start the quiz
+
+
+    </script>
+</body>
+</html>

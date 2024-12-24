@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt: Question 7</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 0;
+            height: 100vh;
+        }
+
+        #puzzle-container, #drop-container {
+            display: grid;
+            grid-template-columns: repeat(5, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 5px;
+            margin: 10px;
+            border: 2px dashed #ccc;
+            padding: 10px;
+        }
+
+        .piece {
+            width: 60px;
+            height: 60px;
+            background-size: 300px 180px;
+            cursor: grab;
+        }
+
+        .drop-slot {
+            width: 60px;
+            height: 60px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+
+        .correct {
+            border: 2px solid red;
+        }
+    </style>
+</head>
+<body>
+    <div id="puzzle-container"></div>
+    <div id="drop-container"></div>
+
+    <script>
+        const rows = 3;
+        const cols = 5;
+        const imageUrl = 'pic7.png';
+
+        const puzzleContainer = document.getElementById('puzzle-container');
+        const dropContainer = document.getElementById('drop-container');
+
+        let pieces = [];
+
+        // Create and shuffle pieces
+        function createPuzzlePieces() {
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const piece = document.createElement('div');
+                    piece.classList.add('piece');
+                    piece.style.backgroundImage = `url(${imageUrl})`;
+                    piece.style.backgroundPosition = `-${col * 60}px -${row * 60}px`;
+                    piece.draggable = true;
+                    piece.dataset.position = `${row}-${col}`;
+
+                    // Add drag event listeners
+                    piece.addEventListener('dragstart', dragStart);
+                    piece.addEventListener('dragend', dragEnd);
+
+                    pieces.push(piece);
+                }
+            }
+            // Shuffle pieces
+            pieces.sort(() => Math.random() - 0.5);
+
+            pieces.forEach(piece => puzzleContainer.appendChild(piece));
+        }
+
+        // Create drop slots
+        function createDropSlots() {
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const slot = document.createElement('div');
+                    slot.classList.add('drop-slot');
+                    slot.dataset.position = `${row}-${col}`;
+
+                    // Add drop event listeners
+                    slot.addEventListener('dragover', dragOver);
+                    slot.addEventListener('drop', drop);
+
+                    dropContainer.appendChild(slot);
+                }
+            }
+        }
+
+        // Drag and drop handlers
+        let draggedPiece = null;
+
+        function dragStart(event) {
+            draggedPiece = event.target;
+            setTimeout(() => event.target.style.display = 'none', 0);
+        }
+
+        function dragEnd(event) {
+            event.target.style.display = 'block';
+            draggedPiece = null;
+        }
+
+        function dragOver(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const slot = event.target;
+
+            if (!slot.classList.contains('piece') && !slot.firstChild) {
+                slot.appendChild(draggedPiece);
+
+                // Check if the piece is in the correct position
+                if (draggedPiece.dataset.position === slot.dataset.position) {
+                    slot.classList.add('correct');
+                } else {
+                    slot.classList.remove('correct');
+                }
+            }
+        }
+
+        // Initialize puzzle
+        createPuzzlePieces();
+        createDropSlots();
+    </script>
+</body>
+</html>
