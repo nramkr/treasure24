@@ -131,6 +131,9 @@
 
             if (!slot.classList.contains('piece') && !slot.firstChild) {
                 slot.appendChild(draggedPiece);
+                draggedPiece.style.position = '';
+                draggedPiece.style.left = '';
+                draggedPiece.style.top = '';
 
                 // Check if the piece is in the correct position
                 if (draggedPiece.dataset.position === slot.dataset.position) {
@@ -149,18 +152,20 @@
             const pieceRect = draggedPiece.getBoundingClientRect();
             const containerRect = puzzleContainer.getBoundingClientRect();
 
-            touchOffset.x = touch.clientX - pieceRect.left + containerRect.left;
-            touchOffset.y = touch.clientY - pieceRect.top + containerRect.top;
-
-            draggedPiece.style.position = 'absolute';
+            touchOffset.x = touch.clientX - pieceRect.left;
+            touchOffset.y = touch.clientY - pieceRect.top;
         }
 
         function touchMove(event) {
             event.preventDefault();
             const touch = event.touches[0];
 
-            draggedPiece.style.left = `${touch.clientX - touchOffset.x}px`;
-            draggedPiece.style.top = `${touch.clientY - touchOffset.y}px`;
+            const containerRect = puzzleContainer.getBoundingClientRect();
+            const newLeft = touch.clientX - touchOffset.x - containerRect.left;
+            const newTop = touch.clientY - touchOffset.y - containerRect.top;
+
+            draggedPiece.style.left = `${Math.max(0, Math.min(newLeft, containerRect.width - draggedPiece.offsetWidth))}px`;
+            draggedPiece.style.top = `${Math.max(0, Math.min(newTop, containerRect.height - draggedPiece.offsetHeight))}px`;
         }
 
         function touchEnd(event) {
@@ -170,6 +175,9 @@
 
             if (validDropTarget && !validDropTarget.firstChild) {
                 validDropTarget.appendChild(draggedPiece);
+                draggedPiece.style.position = '';
+                draggedPiece.style.left = '';
+                draggedPiece.style.top = '';
 
                 // Check if the piece is in the correct position
                 if (draggedPiece.dataset.position === validDropTarget.dataset.position) {
