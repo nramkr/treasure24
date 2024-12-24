@@ -23,6 +23,7 @@
             margin: 10px;
             border: 2px dashed #ccc;
             padding: 10px;
+            position: relative;
         }
 
         .piece {
@@ -30,7 +31,7 @@
             height: 60px;
             background-size: 300px 180px;
             cursor: grab;
-            position: relative;
+            position: absolute;
         }
 
         .drop-slot {
@@ -144,8 +145,12 @@
         function touchStart(event) {
             const touch = event.touches[0];
             draggedPiece = event.target;
-            touchOffset.x = touch.clientX - draggedPiece.getBoundingClientRect().left;
-            touchOffset.y = touch.clientY - draggedPiece.getBoundingClientRect().top;
+
+            const pieceRect = draggedPiece.getBoundingClientRect();
+            const containerRect = puzzleContainer.getBoundingClientRect();
+
+            touchOffset.x = touch.clientX - pieceRect.left + containerRect.left;
+            touchOffset.y = touch.clientY - pieceRect.top + containerRect.top;
 
             draggedPiece.style.position = 'absolute';
         }
